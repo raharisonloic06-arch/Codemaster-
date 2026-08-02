@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirmation d'email — CodeMaster</title>
+<style>
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#080a10;color:#eef1f8;font-family:Inter,sans-serif;}
+  .box{max-width:420px;width:100%;padding:34px;border-radius:20px;background:#151a25;border:1px solid rgba(255,255,255,.08);text-align:center;}
+  h1{font-size:20px;margin:0 0 12px;font-family:'Space Grotesk',sans-serif;}
+  p{color:#a7b0c2;font-size:14.5px;line-height:1.6;margin:0 0 20px;}
+  a{display:inline-block;padding:11px 22px;border-radius:11px;background:linear-gradient(135deg,#2dd9c8,#9d7cf0);color:#04141a;font-weight:700;text-decoration:none;}
+  .icon{font-size:40px;margin-bottom:14px;}
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="icon" id="icon">⏳</div>
+    <h1 id="title">Vérification en cours…</h1>
+    <p id="msg">Un instant, on confirme ton adresse email.</p>
+    <a href="/" id="cta" style="display:none;">Retour à CodeMaster</a>
+  </div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token');
+    const el = (id) => document.getElementById(id);
+    async function run(){
+      if(!token){ el('icon').textContent='⚠️'; el('title').textContent='Lien invalide'; el('msg').textContent='Aucun token trouvé dans le lien.'; el('cta').style.display='inline-block'; return; }
+      try{
+        const res = await fetch(`/api/auth/verify-email?token=${encodeURIComponent(token)}`);
+        const data = await res.json();
+        if(res.ok){
+          el('icon').textContent='✅'; el('title').textContent='Email confirmé !'; el('msg').textContent=data.message;
+        } else {
+          el('icon').textContent='⚠️'; el('title').textContent='Lien expiré ou invalide'; el('msg').textContent=data.error;
+        }
+      }catch(e){
+        el('icon').textContent='⚠️'; el('title').textContent='Erreur réseau'; el('msg').textContent="Impossible de contacter le serveur pour le moment.";
+      }
+      el('cta').style.display='inline-block';
+    }
+    run();
+  </script>
+</body>
+</html>
